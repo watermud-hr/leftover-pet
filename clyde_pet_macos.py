@@ -54,7 +54,14 @@ class ClydeWindow(QWidget):
         self.move_bottom_right()
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.tick)
-        self.timer.start(16)
+        # A transparent always-on-top window is expensive to composite on
+        # macOS. Use an adaptive cadence instead of repainting at 60+ FPS even
+        # while Clyde is sitting or asleep.
+        self.timer.start(125)
+
+    def set_timer_interval(self, milliseconds):
+        if self.timer.interval() != milliseconds:
+            self.timer.setInterval(milliseconds)
 
     def load_images(self):
         sprites = ASSETS / "sprites"
@@ -124,19 +131,23 @@ class ClydeWindow(QWidget):
 
     def tick(self):
         now = time.monotonic()
+        needs_repaint = self.state in {"sit", "run_rest"}
         if now - self.last_frame > .08:
             self.last_frame = now
             self.frame_index += 1
+            needs_repaint = needs_repaint or self.state in {"run", "chew"}
             if self.state == "chew":
                 self.chew_step += 1
                 if self.chew_step >= 18:
                     self.finish_eating()
+                    needs_repaint = True
         if self.state == "run" and self.move_to:
             t = min(1.0, (now - self.move_started) / self.move_duration)
             eased = .5 - math.cos(t * math.pi) / 2
             x = self.move_from.x() + (self.move_to.x() - self.move_from.x()) * eased
             y = self.move_from.y() + (self.move_to.y() - self.move_from.y()) * eased
             self.move(round(x), round(y - 5 * abs(math.sin(t * math.pi * 4))))
+            needs_repaint = True
             if t >= 1:
                 self.move_to = None
                 if self.mode == "run" and random.random() < .25:
@@ -148,13 +159,23 @@ class ClydeWindow(QWidget):
         elif now >= self.next_action_at and not self.pending_files:
             if self.mode == "run":
                 self.start_random_run()
+                needs_repaint = True
             elif self.mode == "rest" and self.state != "sleep":
                 self.state = "sleep"
+                needs_repaint = True
             elif self.mode == "awake":
                 self.state = "sit"
                 self.facing = random.choice(("left", "right"))
                 self.next_action_at = now + random.uniform(5, 10)
-        self.update()
+                needs_repaint = True
+        if needs_repaint:
+            self.update()
+        if self.state in {"run", "chew"}:
+            self.set_timer_interval(40)
+        elif self.state == "sleep":
+            self.set_timer_interval(1000)
+        else:
+            self.set_timer_interval(125)
 
     def start_random_run(self):
         screen = QApplication.primaryScreen().availableGeometry()
@@ -167,6 +188,7 @@ class ClydeWindow(QWidget):
         self.move_duration = max(1.1, min(3.8, distance / 260))
         self.facing = "right" if target.x() > self.x() else "left"
         self.state = "run"
+        self.set_timer_interval(40)
 
     def set_mode(self, mode):
         self.mode = mode
@@ -180,6 +202,8 @@ class ClydeWindow(QWidget):
         else:
             self.state = "sit"
             self.next_action_at = time.monotonic() + 5
+        self.set_timer_interval(1000 if self.state == "sleep" else 125)
+        self.update()
 
     def mousePressEvent(self, event: QMouseEvent):
         if event.button() == Qt.LeftButton:
@@ -201,10 +225,12 @@ class ClydeWindow(QWidget):
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
             self.state = "headbutt"
+            self.update()
             event.acceptProposedAction()
 
     def dragLeaveEvent(self, event):
         self.state = "sit"
+        self.update()
         event.accept()
 
     def dropEvent(self, event):
@@ -228,8 +254,12 @@ class ClydeWindow(QWidget):
             self.pending_files = paths
             self.chew_step = 0
             self.state = "chew"
+            self.set_timer_interval(40)
+            self.update()
         else:
             self.state = "sit"
+            self.set_timer_interval(125)
+            self.update()
             QMessageBox.information(self, "Clyde", "Och, wrong one. My mistake." if len(paths) == 1
                                     else "Och, wrong lot. My mistake.")
 
@@ -242,6 +272,8 @@ class ClydeWindow(QWidget):
                 failures.append(path.name)
         self.pending_files = []
         self.state = "sit"
+        self.set_timer_interval(125)
+        self.update()
         if failures:
             QMessageBox.warning(self, "Clyde", "That one fought back.")
         else:
