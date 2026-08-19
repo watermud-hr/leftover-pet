@@ -8,9 +8,19 @@
 
 ## 支持平台
 
-目前仅支持 Windows 10/11 x64。
+Windows 正式版支持 Windows 10/11 x64。macOS Beta 正在适配，提供 Apple Silicon 与 Intel 两种构建。
 
-macOS 与 Linux 暂不支持，Windows ZIP 不能在这些系统上直接运行。未来需要分别适配系统废纸篓、托盘和应用打包方式。
+Windows ZIP 不能在 macOS 上运行；Mac 用户需要下载对应芯片架构的 macOS Beta。Linux 暂不支持。
+
+### macOS Beta
+
+Mac 版使用独立入口，不会运行 Windows 注册表和回收站代码。目前支持：
+
+- 把 Finder 文件拖到余食身上，确认后移入 macOS 废纸篓。
+- 咀嚼、进食变色、待机形态、宠物对话和拖动跟随。
+- 右键或双指点按打开功能菜单。
+
+Finder 右键“喂给余食”、桌面图标定位、系统托盘和多文件召唤动画仍在适配中。未经过 Apple Developer ID 签名和公证的 Beta，首次启动可能需要在“系统设置 → 隐私与安全性”中选择仍要打开。
 
 ## 下载运行
 
