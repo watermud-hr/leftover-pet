@@ -1,0 +1,72 @@
+name: Build Apple Silicon Desktop Pets v2
+
+on:
+  push:
+    branches:
+      - codex/macos-apple-silicon-v2
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Require Apple Silicon runner
+        run: |
+          test "$(uname -m)" = "arm64"
+          sw_vers
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install build dependencies
+        run: python -m pip install --upgrade pip pyinstaller -r requirements-macos.txt
+      - name: Create app icons
+        run: |
+          make_icon() {
+            source="$1"
+            output="$2"
+            iconset="${output%.icns}.iconset"
+            mkdir -p "$iconset"
+            for size in 16 32 128 256 512; do
+              sips -z "$size" "$size" "$source" --out "$iconset/icon_${size}x${size}.png"
+              double=$((size * 2))
+              sips -z "$double" "$double" "$source" --out "$iconset/icon_${size}x${size}@2x.png"
+            done
+            iconutil -c icns "$iconset" -o "$output"
+          }
+          make_icon assets/tray-icon-v2.png assets/LEFTOVER.icns
+          make_icon clyde-assets/clyde-tray.png clyde-assets/Clyde.icns
+      - name: Build both apps
+        run: |
+          pyinstaller --noconfirm --clean LEFTOVER-AppleSilicon.spec
+          pyinstaller --noconfirm --clean Clyde-AppleSilicon.spec
+      - name: Sign and verify ARM64 apps
+        run: |
+          codesign --force --deep --sign - dist/LEFTOVER.app
+          codesign --force --deep --sign - dist/Clyde.app
+          codesign --verify --deep --strict dist/LEFTOVER.app
+          codesign --verify --deep --strict dist/Clyde.app
+          file dist/LEFTOVER.app/Contents/MacOS/LEFTOVER | tee leftover-arch.txt
+          file dist/Clyde.app/Contents/MacOS/Clyde | tee clyde-arch.txt
+          grep -q arm64 leftover-arch.txt
+          grep -q arm64 clyde-arch.txt
+      - name: Create installable DMGs
+        run: |
+          mkdir -p package/LEFTOVER package/Clyde
+          cp -R dist/LEFTOVER.app package/LEFTOVER/
+          cp -R dist/Clyde.app package/Clyde/
+          ln -s /Applications package/LEFTOVER/Applications
+          ln -s /Applications package/Clyde/Applications
+          printf '安装：把 LEFTOVER.app 拖到 Applications。首次启动请右键应用并选择“打开”。\n支持 Apple Silicon（M1/M2/M3/M4），macOS 13 或更高版本。\n' > package/LEFTOVER/安装说明.txt
+          printf 'Install: drag Clyde.app to Applications. On first launch, right-click the app and choose Open.\nApple Silicon (M1/M2/M3/M4), macOS 13 or later.\n' > package/Clyde/README.txt
+          hdiutil create -volname '余食 LEFTOVER' -srcfolder package/LEFTOVER -ov -format UDZO LEFTOVER-Apple-Silicon.dmg
+          hdiutil create -volname 'Clyde' -srcfolder package/Clyde -ov -format UDZO Clyde-Apple-Silicon.dmg
+          shasum -a 256 LEFTOVER-Apple-Silicon.dmg Clyde-Apple-Silicon.dmg > SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Apple-Silicon-Desktop-Pets-v2
+          path: |
+            LEFTOVER-Apple-Silicon.dmg
+            Clyde-Apple-Silicon.dmg
+            SHA256SUMS.txt
+          if-no-files-found: error
