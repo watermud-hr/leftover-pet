@@ -29,9 +29,11 @@ class ClydeWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Clyde")
-        # A Qt.Tool window vanishes when a macOS app loses focus even though
-        # its process keeps running. Clyde must remain visible across apps.
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        # Keep Clyde visible across apps without re-raising the animated window
+        # on every application-state change, which can make macOS focus flicker.
+        self.setWindowFlags(Qt.Tool | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        self.setAttribute(Qt.WA_MacAlwaysShowToolWindow)
+        self.setAttribute(Qt.WA_ShowWithoutActivating)
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setAcceptDrops(True)
         self.setFixedSize(230, 230)
@@ -84,13 +86,6 @@ class ClydeWindow(QWidget):
     def move_bottom_right(self):
         screen = QApplication.primaryScreen().availableGeometry()
         self.move(screen.right() - self.width() - 24, screen.bottom() - self.height() - 24)
-
-    def ensure_visible(self):
-        if self.isMinimized():
-            self.showNormal()
-        if not self.isVisible():
-            self.show()
-        self.raise_()
 
     def current_pixmap(self):
         if self.state == "run":
@@ -294,8 +289,6 @@ def main():
     app.setQuitOnLastWindowClosed(False)
     window = ClydeWindow()
     window.show()
-    app.applicationStateChanged.connect(
-        lambda _state: QTimer.singleShot(80, window.ensure_visible))
     sys.exit(app.exec())
 
 

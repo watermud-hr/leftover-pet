@@ -20,7 +20,7 @@ app = BUNDLE(
     name='Clyde.app',
     icon='clyde-assets/Clyde.icns',
     bundle_identifier='com.watermud.clydepet.macos',
-    version='0.1.1',
+    version='0.1.2',
     info_plist={
         'CFBundleDisplayName': 'Clyde',
         'NSHighResolutionCapable': True,

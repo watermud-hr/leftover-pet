@@ -59,14 +59,14 @@ jobs:
           ln -s /Applications package/Clyde/Applications
           printf '安装：把 LEFTOVER.app 拖到 Applications。首次启动请右键应用并选择“打开”。\n支持 Apple Silicon（M1/M2/M3/M4），macOS 13 或更高版本。\n' > package/LEFTOVER/安装说明.txt
           printf 'Install: drag Clyde.app to Applications. On first launch, right-click the app and choose Open.\nApple Silicon (M1/M2/M3/M4), macOS 13 or later.\n' > package/Clyde/README.txt
-          hdiutil create -volname '余食 LEFTOVER' -srcfolder package/LEFTOVER -ov -format UDZO LEFTOVER-Apple-Silicon-v0.3.1.dmg
-          hdiutil create -volname 'Clyde' -srcfolder package/Clyde -ov -format UDZO Clyde-Apple-Silicon-v0.1.1.dmg
-          shasum -a 256 LEFTOVER-Apple-Silicon-v0.3.1.dmg Clyde-Apple-Silicon-v0.1.1.dmg > SHA256SUMS.txt
+          hdiutil create -volname '余食 LEFTOVER' -srcfolder package/LEFTOVER -ov -format UDZO LEFTOVER-Apple-Silicon-v0.3.2.dmg
+          hdiutil create -volname 'Clyde' -srcfolder package/Clyde -ov -format UDZO Clyde-Apple-Silicon-v0.1.2.dmg
+          shasum -a 256 LEFTOVER-Apple-Silicon-v0.3.2.dmg Clyde-Apple-Silicon-v0.1.2.dmg > SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
           name: Apple-Silicon-Desktop-Pets-v2
           path: |
-            LEFTOVER-Apple-Silicon-v0.3.1.dmg
-            Clyde-Apple-Silicon-v0.1.1.dmg
+            LEFTOVER-Apple-Silicon-v0.3.2.dmg
+            Clyde-Apple-Silicon-v0.1.2.dmg
             SHA256SUMS.txt
           if-no-files-found: error

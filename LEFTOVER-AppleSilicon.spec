@@ -20,7 +20,7 @@ app = BUNDLE(
     name='LEFTOVER.app',
     icon='assets/LEFTOVER.icns',
     bundle_identifier='com.watermud.leftoverpet.macos',
-    version='0.3.1',
+    version='0.3.2',
     info_plist={
         'CFBundleDisplayName': '余食 LEFTOVER',
         'NSHighResolutionCapable': True,
