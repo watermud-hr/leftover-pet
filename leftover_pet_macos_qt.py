@@ -48,7 +48,10 @@ class LeftoverWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("余食 / LEFTOVER")
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
+        # Qt.Tool windows are hidden by macOS when the application deactivates.
+        # LEFTOVER is a desktop pet, so use a regular frameless window and let
+        # LSUIElement keep it out of the Dock instead.
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setAcceptDrops(True)
         self.setFixedSize(220, 235)
@@ -86,6 +89,13 @@ class LeftoverWindow(QWidget):
     def move_bottom_right(self):
         screen = QApplication.primaryScreen().availableGeometry()
         self.move(screen.right() - self.width() - 24, screen.bottom() - self.height() - 24)
+
+    def ensure_visible(self):
+        if self.isMinimized():
+            self.showNormal()
+        if not self.isVisible():
+            self.show()
+        self.raise_()
 
     def current_pixmap(self):
         if self.chew < 0:
@@ -201,8 +211,11 @@ def main():
         raise SystemExit("This build is for macOS.")
     app = QApplication(sys.argv)
     app.setApplicationName("余食 LEFTOVER")
+    app.setQuitOnLastWindowClosed(False)
     window = LeftoverWindow()
     window.show()
+    app.applicationStateChanged.connect(
+        lambda _state: QTimer.singleShot(80, window.ensure_visible))
     sys.exit(app.exec())
 
 
