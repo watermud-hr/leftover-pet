@@ -65,7 +65,7 @@ Clyde 会窝下来睡觉，不再到处乱跑，适合工作时开启。
 
 - Windows 10/11 x64：`Clyde-Windows-v0.1.3.zip`
 - Apple Silicon Mac（M1/M2/M3/M4）：`Clyde-macOS-Apple-Silicon-v0.1.3.dmg`
-- 两个平台的详细步骤：`Clyde-Windows与macOS安装说明.md`
+- 两个平台的详细步骤：`Clyde-Install-Guide-Windows-macOS.md`
 
 Windows 用户完整解压后双击 `Clyde.exe`；macOS 用户打开 DMG 后，将 `Clyde.app` 拖入“应用程序”。
 
