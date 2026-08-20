@@ -4,3 +4,4 @@ build/
 dist/
 *.spec
 !LEFTOVER-mac.spec
+!Clyde-Windows.spec

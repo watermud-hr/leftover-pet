@@ -1,4 +1,4 @@
-"""Clyde desktop pet for Apple Silicon macOS, built with Qt."""
+"""Clyde desktop pet for macOS and Windows, built with Qt."""
 import math
 import random
 import subprocess
@@ -32,7 +32,8 @@ class ClydeWindow(QWidget):
         # Keep Clyde visible across apps without re-raising the animated window
         # on every application-state change, which can make macOS focus flicker.
         self.setWindowFlags(Qt.Tool | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
-        self.setAttribute(Qt.WA_MacAlwaysShowToolWindow)
+        if sys.platform == "darwin":
+            self.setAttribute(Qt.WA_MacAlwaysShowToolWindow)
         self.setAttribute(Qt.WA_ShowWithoutActivating)
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setAcceptDrops(True)
@@ -300,8 +301,8 @@ class ClydeWindow(QWidget):
         menu.addSeparator()
         feed = menu.addAction("Feed Clyde files…")
         feed.triggered.connect(self.choose_files)
-        trash = menu.addAction("Open Trash")
-        trash.triggered.connect(lambda: subprocess.Popen(["open", str(Path.home() / ".Trash")]))
+        trash = menu.addAction("Open Recycle Bin" if sys.platform == "win32" else "Open Trash")
+        trash.triggered.connect(self.open_trash)
         corner = menu.addAction("Back to bottom-right")
         corner.triggered.connect(self.move_bottom_right)
         about = menu.addAction("About Clyde")
@@ -312,10 +313,17 @@ class ClydeWindow(QWidget):
         quit_action.triggered.connect(QApplication.quit)
         menu.exec(position)
 
+    @staticmethod
+    def open_trash():
+        if sys.platform == "win32":
+            subprocess.Popen(["explorer.exe", "shell:RecycleBinFolder"])
+        else:
+            subprocess.Popen(["open", str(Path.home() / ".Trash")])
+
 
 def main():
-    if sys.platform != "darwin":
-        raise SystemExit("This build is for macOS.")
+    if sys.platform not in {"darwin", "win32"}:
+        raise SystemExit("Clyde currently supports macOS and Windows.")
     app = QApplication(sys.argv)
     app.setApplicationName("Clyde")
     app.setQuitOnLastWindowClosed(False)
