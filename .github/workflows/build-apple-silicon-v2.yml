@@ -40,6 +40,13 @@ jobs:
         run: |
           pyinstaller --noconfirm --clean LEFTOVER-AppleSilicon.spec
           pyinstaller --noconfirm --clean Clyde-AppleSilicon.spec
+      - name: Smoke-test complete LEFTOVER port
+        run: |
+          dist/LEFTOVER.app/Contents/MacOS/LEFTOVER --self-test | tee leftover-self-test.json
+          grep -q '"finder_service": true' leftover-self-test.json
+          grep -q '"swallow": true' leftover-self-test.json
+          plutil -extract NSServices json -o - dist/LEFTOVER.app/Contents/Info.plist | tee leftover-services.json
+          grep -q 'feedToLeftover' leftover-services.json
       - name: Sign and verify ARM64 apps
         run: |
           codesign --force --deep --sign - dist/LEFTOVER.app
@@ -57,16 +64,16 @@ jobs:
           cp -R dist/Clyde.app package/Clyde/
           ln -s /Applications package/LEFTOVER/Applications
           ln -s /Applications package/Clyde/Applications
-          printf '安装：把 LEFTOVER.app 拖到 Applications。首次启动请右键应用并选择“打开”。\n支持 Apple Silicon（M1/M2/M3/M4），macOS 13 或更高版本。\n' > package/LEFTOVER/安装说明.txt
+          printf '安装：把 LEFTOVER.app 拖到 Applications。首次启动若被拦截，请在“系统设置 → 隐私与安全性”点“仍要打开”。\n首次启动后，Finder 文件右键的“快速操作/服务”中会注册“喂给余食”。\n支持 Apple Silicon（M1/M2/M3/M4），macOS 13 或更高版本。\n' > package/LEFTOVER/安装说明.txt
           printf 'Install: drag Clyde.app to Applications. On first launch, right-click the app and choose Open.\nApple Silicon (M1/M2/M3/M4), macOS 13 or later.\n' > package/Clyde/README.txt
-          hdiutil create -volname '余食 LEFTOVER' -srcfolder package/LEFTOVER -ov -format UDZO LEFTOVER-Apple-Silicon-v0.3.2.dmg
+          hdiutil create -volname '余食 LEFTOVER' -srcfolder package/LEFTOVER -ov -format UDZO LEFTOVER-Apple-Silicon-v0.4.0.dmg
           hdiutil create -volname 'Clyde' -srcfolder package/Clyde -ov -format UDZO Clyde-Apple-Silicon-v0.1.3.dmg
-          shasum -a 256 LEFTOVER-Apple-Silicon-v0.3.2.dmg Clyde-Apple-Silicon-v0.1.3.dmg > SHA256SUMS.txt
+          shasum -a 256 LEFTOVER-Apple-Silicon-v0.4.0.dmg Clyde-Apple-Silicon-v0.1.3.dmg > SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
           name: Apple-Silicon-Desktop-Pets-v2
           path: |
-            LEFTOVER-Apple-Silicon-v0.3.2.dmg
+            LEFTOVER-Apple-Silicon-v0.4.0.dmg
             Clyde-Apple-Silicon-v0.1.3.dmg
             SHA256SUMS.txt
           if-no-files-found: error
