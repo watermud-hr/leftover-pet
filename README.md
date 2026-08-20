@@ -1,30 +1,31 @@
 # 余食 / LEFTOVER
 
-一只生活在 Windows 桌面上的异食癖宠物。
+一只生活在桌面阴影里的异食癖宠物。
 
 把不要的文件拖到它身上，它会张嘴询问；确认后文件进入系统回收站，宠物咀嚼、变色，并评价味道。误投文件仍可从回收站恢复。
 
 ![实际运行状态](assets/runtime-preview.png)
 
-## 支持平台
+## 下载对应系统版本
 
-Windows 正式版支持 Windows 10/11 x64。macOS Beta 正在适配，提供 Apple Silicon 与 Intel 两种构建。
+| 系统 | 当前版本 | 下载文件 | 适用设备 |
+| --- | --- | --- | --- |
+| Windows | v0.2.0 | [`LEFTOVER-Windows-v0.2.0.zip`](https://github.com/watermud-hr/leftover-pet/releases/tag/v0.2.0) | Windows 10/11 x64 |
+| macOS | v0.4.0 | [`LEFTOVER-macOS-Apple-Silicon-v0.4.0.dmg`](https://github.com/watermud-hr/leftover-pet/releases/tag/macos-v0.4.0) | Apple Silicon：M1/M2/M3/M4 |
 
-Windows ZIP 不能在 macOS 上运行；Mac 用户需要下载对应芯片架构的 macOS Beta。Linux 暂不支持。
+两个安装包不能混用：Windows 下载 ZIP，M 系列 Mac 下载 DMG。Linux 和 Intel Mac 暂不支持。
 
-### macOS Beta
+Windows 与 macOS 是同一个余食角色和同一套核心进食体验，但分别针对资源管理器和 Finder 实现，因此版本号和部分系统交互有所不同。
 
-Mac 版使用独立入口，不会运行 Windows 注册表和回收站代码。目前支持：
+### macOS 说明
 
-- 把 Finder 文件拖到余食身上，确认后移入 macOS 废纸篓。
-- 咀嚼、进食变色、待机形态、宠物对话和拖动跟随。
-- 右键或双指点按打开功能菜单。
+Mac 版支持 Finder 文件投喂、碎片迁移、文件定位、三根触手、多文件图标处理、整体吞咽、咀嚼变色和宠物对话。确认进食后文件会进入 macOS 废纸篓。
 
-Finder 右键“喂给余食”、桌面图标定位、系统托盘和多文件召唤动画仍在适配中。未经过 Apple Developer ID 签名和公证的 Beta，首次启动可能需要在“系统设置 → 隐私与安全性”中选择仍要打开。
+当前 DMG 未经过 Apple Developer ID 公证。首次启动可能需要在“系统设置 → 隐私与安全性”中选择“仍要打开”。
 
 ## 下载运行
 
-推荐从 GitHub Releases 下载 Windows ZIP：
+Windows 用户从 GitHub Releases 下载 Windows ZIP：
 
 1. 完整解压 ZIP。
 2. 打开解压后的文件夹。
